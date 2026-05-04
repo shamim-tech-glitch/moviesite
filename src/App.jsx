@@ -253,11 +253,23 @@ body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--tx);min-hei
 /* ── POSTER — Netlify proxy ── */
 function Poster({ poster, title, year, genre }) {
   const cols = gCol(genre);
-  const src = poster && poster !== "N/A"
-    ? `/.netlify/functions/proxy?url=${encodeURIComponent(poster)}`
-    : null;
+  const [imgSrc, setImgSrc] = useState(null);
+  const [err, setErr] = useState(false);
 
-  if (!src) return (
+  useEffect(() => {
+    if (!poster || poster === "N/A") { setErr(true); return; }
+    setImgSrc(null); setErr(false);
+    const url = `/.netlify/functions/proxy?url=${encodeURIComponent(poster)}&t=${Date.now()}`;
+    fetch(url)
+      .then(r => {
+        if (!r.ok) throw new Error("failed");
+        return r.blob();
+      })
+      .then(blob => setImgSrc(URL.createObjectURL(blob)))
+      .catch(() => setErr(true));
+  }, [poster]);
+
+  if (err || !imgSrc) return (
     <div className="ph" style={{ background:`linear-gradient(150deg,${cols[0]},${cols[1]}35)` }}>
       <div className="ph-glow" style={{ background:`radial-gradient(ellipse at 50% 30%,${cols[1]}60,transparent 65%)` }}/>
       <div className="ph-l" style={{ color:cols[1] }}>{title?.[0]?.toUpperCase()||"?"}</div>
@@ -266,18 +278,7 @@ function Poster({ poster, title, year, genre }) {
     </div>
   );
 
-  return (
-    <img
-      className="pimg"
-      src={src}
-      alt={title}
-      style={{ width:"100%", height:"250px", objectFit:"cover", display:"block" }}
-      onError={(e) => {
-        e.target.style.display = "none";
-        e.target.parentNode.innerHTML = `<div class="ph" style="background:linear-gradient(150deg,${cols[0]},${cols[1]}35);width:100%;height:250px;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:900;color:${cols[1]};opacity:0.3">${title?.[0]?.toUpperCase()||"?"}</div>`;
-      }}
-    />
-  );
+  return <img className="pimg" src={imgSrc} alt={title} style={{width:"100%",height:"250px",objectFit:"cover",display:"block"}}/>;
 }
 
 const sortByYear = (arr) => [...arr].sort((a,b) => (parseInt(b.Year)||0)-(parseInt(a.Year)||0));
