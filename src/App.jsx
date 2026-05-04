@@ -432,7 +432,12 @@ export default function App() {
                 {movies.map((m,i)=>(
                   <div key={m.imdbID+i} className="card" style={{animationDelay:`${(i%10)*.03}s`}} onClick={()=>setSelected(m)}>
                     <div className="pw">
-                      <Poster poster={m.Poster} title={m.Title} year={m.Year} genre={m.Genre}/>
+                      <img
+  src={`/.netlify/functions/proxy?url=${encodeURIComponent(m.Poster)}`}
+  alt={m.Title}
+  style={{width:"100%",height:"250px",objectFit:"cover",display:"block"}}
+  onError={(e)=>{e.target.style.display="none";}}
+/>
                       {m.imdbRating&&m.imdbRating!=="N/A"&&<div className="rtag">⭐ {m.imdbRating}</div>}
                       <div className="ttag">{m.Type==="series"?"📺":"🎬"} {m.Year}</div>
                     </div>
