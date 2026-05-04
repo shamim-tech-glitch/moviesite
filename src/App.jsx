@@ -253,30 +253,30 @@ body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--tx);min-hei
 /* ── POSTER — Netlify proxy ── */
 function Poster({ poster, title, year, genre }) {
   const cols = gCol(genre);
-  const src = P(poster);
-  const [status, setStatus] = useState(src ? "loading" : "ph");
+  const src = poster && poster !== "N/A"
+    ? `/.netlify/functions/proxy?url=${encodeURIComponent(poster)}`
+    : null;
 
-  useEffect(() => { setStatus(src ? "loading" : "ph"); }, [poster]);
-
-  if (status === "ph") return (
-    <div className="ph" style={{ background:`linear-gradient(150deg,${cols[0]} 0%,${cols[1]}35 100%)` }}>
+  if (!src) return (
+    <div className="ph" style={{ background:`linear-gradient(150deg,${cols[0]},${cols[1]}35)` }}>
       <div className="ph-glow" style={{ background:`radial-gradient(ellipse at 50% 30%,${cols[1]}60,transparent 65%)` }}/>
       <div className="ph-l" style={{ color:cols[1] }}>{title?.[0]?.toUpperCase()||"?"}</div>
       <div className="ph-n" style={{ color:"#e0e0e0" }}>{title?.slice(0,20)}</div>
-      {year && <div className="ph-y" style={{ color:cols[1] }}>{year}</div>}
+      {year&&<div className="ph-y" style={{ color:cols[1] }}>{year}</div>}
     </div>
   );
 
   return (
-    <>
-      {status === "loading" && <div className="sk"/>}
-      <img className="pimg" src={src} alt={title}
-        style={{ display: status === "loaded" ? "block" : "none" }}
-        onLoad={() => setStatus("loaded")}
-        onError={() => setStatus("ph")}
-        loading="lazy"
-      />
-    </>
+    <img
+      className="pimg"
+      src={src}
+      alt={title}
+      style={{ width:"100%", height:"250px", objectFit:"cover", display:"block" }}
+      onError={(e) => {
+        e.target.style.display = "none";
+        e.target.parentNode.innerHTML = `<div class="ph" style="background:linear-gradient(150deg,${cols[0]},${cols[1]}35);width:100%;height:250px;display:flex;align-items:center;justify-content:center;font-size:60px;font-weight:900;color:${cols[1]};opacity:0.3">${title?.[0]?.toUpperCase()||"?"}</div>`;
+      }}
+    />
   );
 }
 
