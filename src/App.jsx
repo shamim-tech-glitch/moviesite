@@ -436,7 +436,14 @@ export default function App() {
   src={`/.netlify/functions/proxy?url=${encodeURIComponent(m.Poster)}`}
   alt={m.Title}
   style={{width:"100%",height:"250px",objectFit:"cover",display:"block"}}
-  onError={(e)=>{e.target.style.display="none";}}
+  onError={(e)=>{
+  e.target.style.display="none";
+  const cols=gCol(m.Genre);
+  const ph=document.createElement("div");
+  ph.style.cssText=`width:100%;height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(150deg,${cols[0]},${cols[1]}35);`;
+  ph.innerHTML=`<div style="font-size:64px;font-weight:900;color:${cols[1]};opacity:0.3">${m.Title?.[0]?.toUpperCase()||"?"}</div><div style="font-size:12px;color:#ddd;opacity:0.5;padding:0 12px;text-align:center">${m.Title?.slice(0,20)}</div>`;
+  e.target.parentNode.insertBefore(ph,e.target);
+}}
 />
                       {m.imdbRating&&m.imdbRating!=="N/A"&&<div className="rtag">⭐ {m.imdbRating}</div>}
                       <div className="ttag">{m.Type==="series"?"📺":"🎬"} {m.Year}</div>
